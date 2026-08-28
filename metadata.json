@@ -1,0 +1,6 @@
+{
+  "name": "Đại Chiến Phản Ứng Oxi Hóa - Khử",
+  "description": "Trò chơi học tập Hóa học 10 THPT về bản chất nhường nhận electron, phương pháp thăng bằng electron, đấu trường đối kháng 2P PvP và phòng thí nghiệm ảo 3D trực quan.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

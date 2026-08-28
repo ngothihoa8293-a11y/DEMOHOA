@@ -1,0 +1,357 @@
+// Utility to generate and download a 100% standalone, zero-dependency HTML file
+// containing all HTML, CSS, JavaScript, Web Audio synthesizer, and Chemistry data.
+
+export function downloadStandaloneHtml() {
+  const fullHtmlContent = `<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đại Chiến Phản Ứng Oxi Hóa - Khử: Thăng Bằng Electron - Hóa Học 10 THPT</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    .animate-shake { animation: shake 0.5s ease-in-out; }
+    .glow-cyan { text-shadow: 0 0 15px rgba(6, 182, 212, 0.6); }
+    .glow-amber { text-shadow: 0 0 15px rgba(245, 158, 11, 0.6); }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-cyan-500 selection:text-black">
+  <div id="game-app" class="max-w-4xl w-full mx-auto p-3 sm:p-6 flex flex-col gap-4 flex-1">
+    <!-- Header -->
+    <header class="flex items-center justify-between p-4 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-purple-600 flex items-center justify-center font-black text-xl text-white shadow-lg">
+          ⚛
+        </div>
+        <div>
+          <span class="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">HÓA HỌC 10 THPT • OXI HÓA - KHỬ</span>
+          <h1 class="text-base sm:text-lg font-black text-white uppercase">Đại Chiến Phản Ứng Oxi Hóa - Khử</h1>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="px-3 py-1.5 rounded-xl bg-slate-950 border border-amber-500/40 text-amber-300 text-xs font-bold font-mono">
+          ⚡ <span id="stat-energy">0</span> MW
+        </div>
+        <button id="btn-sound" onclick="toggleSound()" class="p-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700">
+          🔊
+        </button>
+      </div>
+    </header>
+
+    <!-- Act Selection Navigation -->
+    <div class="grid grid-cols-3 gap-2">
+      <button onclick="switchAct(1)" id="tab-act1" class="p-3 rounded-xl border text-left bg-cyan-950/60 border-cyan-400 text-white">
+        <div class="text-[10px] font-bold text-cyan-400">HỒI 1</div>
+        <div class="text-xs font-bold">Bản Chất e⁻</div>
+      </button>
+      <button onclick="switchAct(2)" id="tab-act2" class="p-3 rounded-xl border text-left bg-slate-900 border-slate-800 text-slate-400">
+        <div class="text-[10px] font-bold text-amber-400">HỒI 2</div>
+        <div class="text-xs font-bold">Cán Cân Cơ Bản</div>
+      </button>
+      <button onclick="switchAct(3)" id="tab-act3" class="p-3 rounded-xl border text-left bg-slate-900 border-slate-800 text-slate-400">
+        <div class="text-[10px] font-bold text-pink-400">HỒI 3</div>
+        <div class="text-xs font-bold">Quá Tải Redox</div>
+      </button>
+    </div>
+
+    <!-- AI Robot Assistant -->
+    <div class="flex items-start gap-3 p-4 rounded-2xl bg-slate-900/80 border border-slate-800">
+      <div class="w-12 h-12 rounded-xl bg-slate-800 border border-cyan-500/40 flex items-center justify-center text-2xl shrink-0">
+        🤖
+      </div>
+      <div>
+        <div class="text-xs font-bold text-cyan-300">AI HƯỚNG DẪN: ORBIT-10</div>
+        <p id="ai-text" class="text-sm font-medium text-slate-200 mt-0.5">
+          Chào Đặc vụ! Hãy chuyển electron từ chất khử sang chất oxi hóa để kích hoạt lò phản ứng!
+        </p>
+      </div>
+    </div>
+
+    <!-- Main Game Workspace Container -->
+    <main id="game-workspace" class="flex flex-col gap-4">
+      <!-- Dynamic interactive contents loaded by JS -->
+    </main>
+  </div>
+
+  <script>
+    // Audio Synthesizer via Web Audio API
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    const audioCtx = new AudioContextClass();
+    let isMuted = false;
+
+    function playSound(type) {
+      if (isMuted || !audioCtx) return;
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const now = audioCtx.currentTime;
+
+      if (type === 'snap') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.frequency.setValueAtTime(900, now);
+        osc.frequency.exponentialRampToValueAtTime(450, now + 0.12);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(now); osc.stop(now + 0.13);
+      } else if (type === 'correct') {
+        [523, 659, 783, 1046].forEach((f, i) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.frequency.setValueAtTime(f, now + i * 0.08);
+          gain.gain.setValueAtTime(0.2, now + i * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.08 + 0.3);
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.start(now + i * 0.08); osc.stop(now + i * 0.08 + 0.3);
+        });
+      } else if (type === 'wrong') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.linearRampToValueAtTime(100, now + 0.25);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(now); osc.stop(now + 0.26);
+      }
+    }
+
+    function toggleSound() {
+      isMuted = !isMuted;
+      document.getElementById('btn-sound').innerText = isMuted ? '🔇' : '🔊';
+    }
+
+    // Chemistry Question Dataset
+    const DATA = {
+      act1: [
+        { title: 'Phản ứng Kẽm đẩy Đồng', eq: 'Zn + Cu²⁺ → Zn²⁺ + Cu', red: 'Zn⁰', ox: 'Cu²⁺', e: 2, exp: 'Zn nhường 2e cho Cu²⁺.' },
+        { title: 'Magie tác dụng Axit', eq: 'Mg + 2H⁺ → Mg²⁺ + H₂', red: 'Mg⁰', ox: '2H⁺', e: 2, exp: 'Mg nhường 2e cho 2 ion H⁺.' },
+        { title: 'Nhôm đẩy Sắt(III)', eq: 'Al + Fe³⁺ → Al³⁺ + Fe', red: 'Al⁰', ox: 'Fe³⁺', e: 3, exp: 'Al nhường 3e cho Fe³⁺.' }
+      ],
+      act2: [
+        { title: 'Sắt tác dụng HCl', r: ['Fe', 'HCl'], p: ['FeCl₂', 'H₂'], correctR: [1, 2], correctP: [1, 1], e: 2, exp: '1 Fe + 2 HCl → 1 FeCl₂ + 1 H₂' },
+        { title: 'Đồng tác dụng AgNO₃', r: ['Cu', 'AgNO₃'], p: ['Cu(NO₃)₂', 'Ag'], correctR: [1, 2], correctP: [1, 2], e: 2, exp: '1 Cu + 2 AgNO₃ → 1 Cu(NO₃)₂ + 2 Ag' },
+        { title: 'Nhôm tác dụng HCl', r: ['Al', 'HCl'], p: ['AlCl₃', 'H₂'], correctR: [2, 6], correctP: [2, 3], e: 6, exp: '2 Al + 6 HCl → 2 AlCl₃ + 3 H₂' }
+      ],
+      act3: [
+        { title: 'Đồng tác dụng HNO₃ đặc', r: ['Cu', 'HNO₃'], p: ['Cu(NO₃)₂', 'NO₂', 'H₂O'], correctR: [1, 4], correctP: [1, 2, 2], e: 2, exp: '1 Cu + 4 HNO₃ → 1 Cu(NO₃)₂ + 2 NO₂ + 2 H₂O' },
+        { title: 'KMnO₄ tác dụng HCl đặc', r: ['KMnO₄', 'HCl'], p: ['KCl', 'MnCl₂', 'Cl₂', 'H₂O'], correctR: [2, 16], correctP: [2, 2, 5, 8], e: 10, exp: '2 KMnO₄ + 16 HCl → 2 KCl + 2 MnCl₂ + 5 Cl₂ + 8 H₂O' }
+      ]
+    };
+
+    let currentAct = 1;
+    let questionIdx = 0;
+    let energyScore = 0;
+    let transferred = 0;
+    let userCoeffsR = [1, 1, 1];
+    let userCoeffsP = [1, 1, 1, 1];
+
+    function switchAct(act) {
+      currentAct = act;
+      questionIdx = 0;
+      transferred = 0;
+      userCoeffsR = [1, 1, 1];
+      userCoeffsP = [1, 1, 1, 1];
+      [1, 2, 3].forEach(a => {
+        const tab = document.getElementById('tab-act' + a);
+        if (a === act) {
+          tab.className = 'p-3 rounded-xl border text-left bg-cyan-950/60 border-cyan-400 text-white';
+        } else {
+          tab.className = 'p-3 rounded-xl border text-left bg-slate-900 border-slate-800 text-slate-400';
+        }
+      });
+      renderGame();
+    }
+
+    function renderGame() {
+      const container = document.getElementById('game-workspace');
+      document.getElementById('stat-energy').innerText = energyScore;
+
+      if (currentAct === 1) {
+        const q = DATA.act1[questionIdx];
+        document.getElementById('ai-text').innerText = 'Hồi 1: Hãy chuyển chính xác ' + q.e + ' hạt electron từ chất khử sang chất oxi hóa.';
+        container.innerHTML = \`
+          <div class="bg-slate-900 p-5 rounded-2xl border border-cyan-500/30">
+            <h3 class="font-bold text-lg text-white mb-2">\${q.title}</h3>
+            <div class="p-3 bg-slate-950 rounded-xl font-mono text-center text-xl text-cyan-300 font-bold mb-4">
+              \${q.eq}
+            </div>
+            <div class="grid grid-cols-2 gap-4 text-center">
+              <div class="bg-slate-950 p-4 rounded-xl border border-amber-500/30">
+                <div class="text-xs font-bold text-amber-400">CHẤT KHỬ: \${q.red}</div>
+                <div class="text-sm text-slate-300 my-2">Còn lại: \${q.e - transferred}/\${q.e} e⁻</div>
+                <button onclick="transferElectron(1)" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-xl text-xs">
+                  ⚡ Chuyển 1 e⁻
+                </button>
+              </div>
+              <div class="bg-slate-950 p-4 rounded-xl border border-cyan-500/30">
+                <div class="text-xs font-bold text-cyan-400">CHẤT OXI HÓA: \${q.ox}</div>
+                <div class="text-sm text-slate-300 my-2">Đã nhận: \${transferred}/\${q.e} e⁻</div>
+                <button onclick="transferElectron(-1)" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs">
+                  Hoàn lại 1 e⁻
+                </button>
+              </div>
+            </div>
+            <div class="mt-4 flex justify-between">
+              <button onclick="resetAct1()" class="px-4 py-2 bg-slate-800 rounded-xl text-xs">Làm lại</button>
+              <button onclick="checkAct1()" class="px-6 py-2.5 bg-cyan-600 hover:bg-cyan-500 font-bold rounded-xl text-xs text-white">Xác Nhận</button>
+            </div>
+            <div id="feedback" class="mt-3 hidden p-3 rounded-xl"></div>
+          </div>
+        \`;
+      } else {
+        const q = (currentAct === 2 ? DATA.act2 : DATA.act3)[questionIdx];
+        document.getElementById('ai-text').innerText = 'Hồi ' + currentAct + ': Hãy điều chỉnh hệ số để bảo toàn số electron nhường và nhận!';
+        
+        let reactantsHtml = q.r.map((name, i) => \`
+          <div class="flex items-center justify-between p-2 bg-slate-950 rounded-lg">
+            <span class="font-bold">\${name}</span>
+            <div class="flex items-center gap-2">
+              <button onclick="changeCoeff('r', \${i}, -1)" class="w-7 h-7 bg-slate-800 rounded">-</button>
+              <span class="font-bold text-amber-300 w-6 text-center">\${userCoeffsR[i] || 1}</span>
+              <button onclick="changeCoeff('r', \${i}, 1)" class="w-7 h-7 bg-slate-800 rounded">+</button>
+            </div>
+          </div>
+        \`).join('');
+
+        let productsHtml = q.p.map((name, i) => \`
+          <div class="flex items-center justify-between p-2 bg-slate-950 rounded-lg">
+            <span class="font-bold">\${name}</span>
+            <div class="flex items-center gap-2">
+              <button onclick="changeCoeff('p', \${i}, -1)" class="w-7 h-7 bg-slate-800 rounded">-</button>
+              <span class="font-bold text-cyan-300 w-6 text-center">\${userCoeffsP[i] || 1}</span>
+              <button onclick="changeCoeff('p', \${i}, 1)" class="w-7 h-7 bg-slate-800 rounded">+</button>
+            </div>
+          </div>
+        \`).join('');
+
+        container.innerHTML = \`
+          <div class="bg-slate-900 p-5 rounded-2xl border border-amber-500/30">
+            <h3 class="font-bold text-lg text-white mb-2">\${q.title}</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-3">
+              <div class="space-y-2">
+                <div class="text-xs font-bold text-amber-400">CHẤT THAM GIA</div>
+                \${reactantsHtml}
+              </div>
+              <div class="space-y-2">
+                <div class="text-xs font-bold text-cyan-400">SẢN PHẨM</div>
+                \${productsHtml}
+              </div>
+            </div>
+            <div class="mt-4 flex justify-between">
+              <button onclick="resetSliders()" class="px-4 py-2 bg-slate-800 rounded-xl text-xs">Đặt lại</button>
+              <button onclick="checkBalanced()" class="px-6 py-2.5 bg-amber-600 hover:bg-amber-500 font-bold rounded-xl text-xs text-white">Kiểm Tra Cán Cân</button>
+            </div>
+            <div id="feedback" class="mt-3 hidden p-3 rounded-xl"></div>
+          </div>
+        \`;
+      }
+    }
+
+    function transferElectron(delta) {
+      const q = DATA.act1[questionIdx];
+      if (delta > 0 && transferred < q.e) {
+        transferred++;
+        playSound('snap');
+      } else if (delta < 0 && transferred > 0) {
+        transferred--;
+        playSound('snap');
+      }
+      renderGame();
+    }
+
+    function resetAct1() {
+      transferred = 0;
+      renderGame();
+    }
+
+    function checkAct1() {
+      const q = DATA.act1[questionIdx];
+      const fb = document.getElementById('feedback');
+      fb.classList.remove('hidden');
+      if (transferred === q.e) {
+        playSound('correct');
+        energyScore += 100;
+        fb.className = 'mt-3 p-3 rounded-xl bg-emerald-950 border border-emerald-500 text-emerald-200 text-xs';
+        fb.innerHTML = '<strong>Chính xác!</strong> ' + q.exp + '<br><button onclick="nextQuestion()" class="mt-2 px-4 py-1.5 bg-emerald-600 text-white rounded font-bold">Câu Tiếp Theo →</button>';
+      } else {
+        playSound('wrong');
+        fb.className = 'mt-3 p-3 rounded-xl bg-rose-950 border border-rose-500 text-rose-200 text-xs';
+        fb.innerHTML = '<strong>Chưa chính xác!</strong> Số e chuyển giao chưa đúng.';
+      }
+    }
+
+    function changeCoeff(type, idx, delta) {
+      playSound('snap');
+      if (type === 'r') {
+        userCoeffsR[idx] = Math.max(1, (userCoeffsR[idx] || 1) + delta);
+      } else {
+        userCoeffsP[idx] = Math.max(1, (userCoeffsP[idx] || 1) + delta);
+      }
+      renderGame();
+    }
+
+    function resetSliders() {
+      userCoeffsR = [1, 1, 1, 1];
+      userCoeffsP = [1, 1, 1, 1];
+      renderGame();
+    }
+
+    function checkBalanced() {
+      const q = (currentAct === 2 ? DATA.act2 : DATA.act3)[questionIdx];
+      const matchR = q.correctR.every((c, i) => (userCoeffsR[i] || 1) === c);
+      const matchP = q.correctP.every((c, i) => (userCoeffsP[i] || 1) === c);
+      const fb = document.getElementById('feedback');
+      fb.classList.remove('hidden');
+
+      if (matchR && matchP) {
+        playSound('correct');
+        energyScore += 150;
+        fb.className = 'mt-3 p-3 rounded-xl bg-emerald-950 border border-emerald-500 text-emerald-200 text-xs';
+        fb.innerHTML = '<strong>Cân bằng hoàn hảo!</strong> ' + q.exp + '<br><button onclick="nextQuestion()" class="mt-2 px-4 py-1.5 bg-emerald-600 text-white rounded font-bold">Câu Tiếp Theo →</button>';
+      } else {
+        playSound('wrong');
+        fb.className = 'mt-3 p-3 rounded-xl bg-rose-950 border border-rose-500 text-rose-200 text-xs';
+        fb.innerHTML = '<strong>Chưa đúng!</strong> Cán cân electron hoặc số lượng nguyên tử chưa bảo toàn.';
+      }
+    }
+
+    function nextQuestion() {
+      const list = currentAct === 1 ? DATA.act1 : currentAct === 2 ? DATA.act2 : DATA.act3;
+      if (questionIdx < list.length - 1) {
+        questionIdx++;
+      } else if (currentAct < 3) {
+        switchAct(currentAct + 1);
+        return;
+      } else {
+        alert('CHÚC MỪNG ĐẶC VỤ! Bạn đã hoàn thành toàn bộ khóa huấn luyện Đại Chiến Redox!');
+        switchAct(1);
+        return;
+      }
+      transferred = 0;
+      userCoeffsR = [1, 1, 1, 1];
+      userCoeffsP = [1, 1, 1, 1];
+      renderGame();
+    }
+
+    // Initialize first screen
+    renderGame();
+  </script>
+</body>
+</html>`;
+
+  const blob = new Blob([fullHtmlContent], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'Phong_Lab_Dai_Chien_Redox_Hoa10.html';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
